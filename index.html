@@ -37,8 +37,8 @@ button.g{background:var(--sage-d)}button.o{background:transparent;color:var(--sa
 <label for="cd">Código de acceso</label><input id="cd" placeholder="Se arma solo con el nombre, o escribí el tuyo" autocapitalize="characters" autocomplete="off">
 <div class="acts"><button id="alta">Guardar y armar mensaje</button><button class="o" id="suger">Sugerir otro código</button></div>
 <div class="note g">Si dejás el código vacío, se genera uno con el nombre y 5 letras o números al azar. Mínimo 6 caracteres. <b>El código funciona apenas lo guardás</b>: no hay que subir nada a GitHub.</div></div>
-<div class="card hide" id="ultimo"><h2>2. Mensaje listo para WhatsApp</h2><p style="margin:0 0 10px">Para <b id="ultnom"></b></p><div class="msg" id="msgtxt"></div><div class="acts"><button id="cpmsg">Copiar mensaje</button></div>
-<div class="note">Pegalo en el chat de WhatsApp de la clienta: ya trae el <b>link de la app</b> y su <b>código</b>.</div></div>
+<div class="card hide" id="ultimo"><h2>2. Mensaje listo para enviar</h2><p style="margin:0 0 10px">Para <b id="ultnom"></b></p><div class="msg" id="msgtxt"></div><div class="acts"><button id="cpmsg">Copiar para WhatsApp</button><button class="o" id="cpml">Copiar para Mercado Libre</button></div>
+<div class="note"><b>WhatsApp:</b> Pegalo en el chat de WhatsApp de la clienta: ya trae el <b>link de la app</b> y su <b>código</b>. <b>Mercado Libre:</b> el mensaje es más corto (allá hay un límite de 350 caracteres): pegalo en la mensajería de la venta y adjuntá el <b>PDF paso a paso</b>.</div></div>
 <div class="card"><h2>3. Tus clientas</h2><div id="lista"></div>
 <div class="note g"><b>Liberar celular:</b> si una clienta cambia de teléfono, tocá "Liberar celular" y podrá usar su código en el nuevo. <b>Dar de baja:</b> el código deja de funcionar y la app se bloquea la próxima vez que se abra con internet.</div></div>
 <div class="card"><h2>4. Datos</h2><div class="acts"><button class="o" id="csv">Descargar lista (Excel/CSV)</button></div>
@@ -127,6 +127,7 @@ async function patch(id,mask,fields){
   if(!r.ok) throw new Error(String(r.status));
 }
 const mensaje=it=>`Hola ${it.name.split(' ')[0]}, ¡gracias por tu compra! 💗\n\nTe paso lo que necesitás para usar tu app RESET 21:\n1) El link de tu app: ${URLAPP}\n2) Tu código de acceso personal: ${it.code}\n\nAbrí el link desde tu celular y escribí el código cuando te lo pida. Si tenés iPhone, primero instalá la app (en Safari tocá los tres puntitos o Compartir, y después Agregar a Inicio) y escribí el código adentro de la app instalada.\n\nTu código funciona en ${it.max===1?'1 celular':it.max+' celulares'}: por favor no lo compartas. Si cambiás de celular, avisame y te lo libero.\n\nCualquier duda, escribime por acá.`;
+const mensajeML=it=>`Hola ${it.name.split(' ')[0]}, gracias por tu compra. Te adjunto el PDF con el paso a paso para abrir e instalar tu app RESET 21. Tu código de acceso personal es: ${it.code}\nLa app te lo pide al entrar. Funciona en ${it.max===1?'1 celular':it.max+' celulares'}, por favor no lo compartas. Cualquier duda, escribime por acá.`;
 /* ---- pantalla ---- */
 function estado(i){return !i.active?'<span class="pill off">De baja</span>':i.devices===0?'<span class="pill t">Sin usar todavía</span>':`<span class="pill">En uso: ${i.devices} de ${i.max} ${i.max===1?'celular':'celulares'}</span>`}
 function dibujar(){
@@ -134,7 +135,7 @@ function dibujar(){
   $('#stats').innerHTML=`<div><b>${ITEMS.length}</b>códigos</div><div><b>${a}</b>activos</div><div><b>${u}</b>ya usados</div>`;
   $('#url').value=URLAPP;
   const l=ITEMS.find(i=>i.id===LAST);$('#ultimo').classList.toggle('hide',!l);if(l){$('#msgtxt').textContent=mensaje(l);$('#ultnom').textContent=l.name+' · '+l.code}
-  $('#lista').innerHTML=ITEMS.length?ITEMS.map(i=>`<div class="item ${i.active?'':'off'}"><div class="cd">${esc(i.code)}${estado(i)}</div><div class="m">${esc(i.name)}${i.note?' · '+esc(i.note):''} · ${esc(i.date)}</div><div class="acts"><button class="s g" data-a="msg" data-id="${i.id}">Copiar mensaje</button><button class="s o" data-a="cod" data-id="${i.id}">Copiar código</button>${i.devices>0?`<button class="s o" data-a="lib" data-id="${i.id}">Liberar celular</button>`:''}<button class="s o" data-a="tog" data-id="${i.id}">${i.active?'Dar de baja':'Reactivar'}</button><button class="s o" data-a="del" data-id="${i.id}">Borrar</button></div></div>`).join(''):'<p style="color:var(--muted)">Todavía no cargaste ninguna venta.</p>';
+  $('#lista').innerHTML=ITEMS.length?ITEMS.map(i=>`<div class="item ${i.active?'':'off'}"><div class="cd">${esc(i.code)}${estado(i)}</div><div class="m">${esc(i.name)}${i.note?' · '+esc(i.note):''} · ${esc(i.date)}</div><div class="acts"><button class="s g" data-a="msg" data-id="${i.id}">Copiar WhatsApp</button><button class="o" data-a="msgml" data-id="${i.id}">Copiar ML</button><button class="s o" data-a="cod" data-id="${i.id}">Copiar código</button>${i.devices>0?`<button class="s o" data-a="lib" data-id="${i.id}">Liberar celular</button>`:''}<button class="s o" data-a="tog" data-id="${i.id}">${i.active?'Dar de baja':'Reactivar'}</button><button class="s o" data-a="del" data-id="${i.id}">Borrar</button></div></div>`).join(''):'<p style="color:var(--muted)">Todavía no cargaste ninguna venta.</p>';
 }
 async function recargar(msg){try{await cargar();dibujar();if(msg)toast(msg)}catch(e){toast(errTxt(e));if(/sesion|401|403/.test(String(e.message)))salir()}}
 function entrar(){$('#login').classList.add('hide');$('#panel').classList.remove('hide');$('#quien').textContent=S.email;recargar()}
@@ -154,7 +155,7 @@ async function nueva(){
 }
 document.addEventListener('click',async e=>{const b=e.target.closest('[data-a]');if(!b)return;const it=ITEMS.find(i=>i.id===b.dataset.id);if(!it)return;
   try{
-    if(b.dataset.a==='msg')copiar(mensaje(it),'Mensaje copiado');
+    if(b.dataset.a==='msg')copiar(mensaje(it),'Mensaje para WhatsApp copiado');else if(b.dataset.a==='msgml')copiar(mensajeML(it),'Mensaje para Mercado Libre copiado');
     else if(b.dataset.a==='cod')copiar(it.code,'Código copiado');
     else if(b.dataset.a==='lib'){if(confirm('¿Liberar el celular de '+it.name+'? Podrá usar su código en un celular nuevo.')){await patch(it.id,'devices',{devices:{arrayValue:{}}});await recargar('Celular liberado')}}
     else if(b.dataset.a==='tog'){await patch(it.id,'active',{active:{booleanValue:!it.active}});await recargar(it.active?'Código dado de baja':'Código reactivado')}
@@ -169,7 +170,7 @@ document.addEventListener('DOMContentLoaded',async()=>{
   $('#salir').onclick=salir;$('#rec').onclick=()=>recargar('Lista actualizada');$('#csv').onclick=csv;
   $('#suger').onclick=()=>{$('#cd').value=suggest($('#nm').value);$('#cd').dataset.edit=1};
   $('#nm').oninput=()=>{if(!$('#cd').dataset.edit)$('#cd').placeholder=suggest($('#nm').value)};$('#cd').oninput=()=>{$('#cd').dataset.edit=1};
-  $('#alta').onclick=nueva;$('#cpmsg').onclick=()=>{const l=ITEMS.find(i=>i.id===LAST);if(l)copiar(mensaje(l),'Mensaje copiado')};
+  $('#alta').onclick=nueva;$('#cpmsg').onclick=()=>{const l=ITEMS.find(i=>i.id===LAST);if(l)copiar(mensaje(l),'Mensaje para WhatsApp copiado')};$('#cpml').onclick=()=>{const l=ITEMS.find(i=>i.id===LAST);if(l)copiar(mensajeML(l),'Mensaje para Mercado Libre copiado')};
   $('#url').oninput=e=>{URLAPP=e.target.value.trim();try{localStorage.setItem('r21.panel.url',URLAPP)}catch(x){}};
   try{const r=sessionStorage.getItem('r21.panel.ref'),m=sessionStorage.getItem('r21.panel.email');if(r&&m){S={tok:null,ref:r,exp:0,email:m};entrar()}}catch(e){}
 });
